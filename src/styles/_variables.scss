@@ -1,0 +1,28 @@
+// 将原生 CSS 变量映射为 Sass 变量，方便工程化调用与 IDE 提示
+$theme-color: var(--theme-color);
+$btn-color: var(--btn-color);
+$btn-hover-color: var(--btn-hover-color);
+
+/* 统一美化全局垂直滚动条 */
+::-webkit-scrollbar {
+  width: 6px;  /* 保持较窄的宽度，更具科技感 */
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* 关键：轨道完全透明，不占用实体空间 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+
+  &:hover {
+    background: $btn-color; /* 悬浮时甚至能联动你的动态按钮色 */
+  }
+}
+
+/* 针对支持 overlay 属性的旧版/特定浏览器内核（可选，增强保障） */
+html {
+  overflow-y: overlay;
+}
