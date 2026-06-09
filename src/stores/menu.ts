@@ -28,22 +28,14 @@ export const useMenuStore = defineStore('menu', {
         name: '首页',
         path: '/index',
         icon: 'HomeIcon',
-        permissions: ['admin', 'user'],
-        children: [
-          { id: 'analysis', name: '分析页', path: '/dashboard/analysis', permissions: ['admin', 'user'] },
-          { id: 'monitor', name: '监控页', path: '/dashboard/monitor', permissions: ['admin'] }
-        ]
+        permissions: ['admin', 'user']
       },
       {
-        id: 'visual',
-        name: '可视化大屏',
-        path: '/visual',
+        id: 'flowDesigner',
+        name: '程序流程图',
+        path: '/flowDesigner',
         icon: 'DataIcon',
-        permissions: ['admin'],
-        children: [
-          { id: 'screen-list', name: '大屏列表', path: '/visual/list' },
-          { id: 'editor', name: '大屏编辑器', path: '/visual/editor' }
-        ]
+        permissions: ['admin']
       },
       {
         id: 'system',
@@ -104,6 +96,8 @@ export const useMenuStore = defineStore('menu', {
       try {
         // const response = await api.get('/api/menus')
         // this.menus = response.data
+        // 设置router.addRoute(...) 动态添加路由
+        // router.addRoute(...)
       } catch (error) {
         console.error('Failed to fetch menus', error)
       } finally {
