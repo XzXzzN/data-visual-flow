@@ -1082,20 +1082,20 @@ onUnmounted(() => {
   background-color: #fff; border: 1px solid #e0e0e0; border-left: none; border-radius: 0 4px 4px 0;
   cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #909399; box-shadow: 2px 0 8px rgba(0,0,0,0.05);
 }
-.sidebar-toggle-btn:hover { background-color: #409eff; color: #fff; }
+.sidebar-toggle-btn:hover { background-color: var(--btn-color); color: #fff; }
 
-.node-item { background-color: #fff; border: 1px dashed #409eff; border-radius: 4px; padding: 10px; margin-bottom: 12px; cursor: grab; text-align: center; user-select: none; }
-.node-item:hover { background-color: #ecf5ff; }
+.node-item { background-color: #fff; border: 1px dashed var(--btn-color); border-radius: 4px; padding: 10px; margin-bottom: 12px; cursor: grab; text-align: center; user-select: none; color: #000; }
+.node-item:hover { background-color: var(--btn-hover-color); }
 
 .line-type-selector { display: flex; gap: 8px; margin-bottom: 12px; }
 .line-type-selector button {
   flex: 1; padding: 8px 4px; font-size: 12px; cursor: pointer; background-color: #fff; border: 1px solid #dcdfe6; border-radius: 4px; transition: all 0.2s;
 }
-.line-type-selector button:hover { color: #409eff; border-color: #c6e2ff; background-color: #ecf5ff; }
-.line-type-selector .active-line-type { background-color: #409eff !important; color: #fff !important; border-color: #409eff !important; font-weight: bold; }
+.line-type-selector button:hover { color: var(--btn-color); border-color: var(--btn-color); background-color: var(--btn-hover-color); }
+.line-type-selector .active-line-type { background-color: var(--btn-color) !important; color: #fff !important; border-color: var(--btn-color) !important; font-weight: bold; }
 
 .btn-group button { display: block; width: 100%; margin-bottom: 8px; padding: 8px; cursor: pointer; background-color: #fff; border: 1px solid #dcdfe6; border-radius: 4px; }
-.btn-group button:hover { color: #409eff; border-color: #c6e2ff; background-color: #ecf5ff; }
+.btn-group button:hover { color: var(--btn-color); border-color: var(--btn-color); background-color: var(--btn-hover-color); }
 .btn-group button:disabled { color: #c0c4cc; cursor: not-allowed; border-color: #ebeef5; }
 
 .sidebar-delete-line-btn { border: 1px solid #f56c6c !important; color: #f56c6c; font-weight: bold; }
@@ -1122,7 +1122,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .panel-row { display: flex; flex-direction: column; margin-bottom: 12px; }
 .panel-row label { font-size: 12px; color: #606266; margin-bottom: 5px; font-weight: bold; }
 .panel-row input, .panel-row select { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; outline: none; color: #333; transition: border-color 0.2s; }
-.panel-row input:focus, .panel-row select:focus { border-color: #409eff; box-shadow: 0 0 4px rgba(64,158,255,0.2); }
+.panel-row input:focus, .panel-row select:focus { border-color: var(--btn-color); box-shadow: 0 0 4px rgba(64,158,255,0.2); }
 
 .delete-line-btn {
   margin-top: 15px; padding: 8px; background-color: #fff; border: 1px solid #f56c6c;
@@ -1132,5 +1132,5 @@ canvas { display: block; width: 100%; height: 100%; }
 
 .switch-row { display: flex; align-items: center; margin-top: 10px; gap: 6px; }
 .switch-row input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; margin: 0; }
-.checkbox-label { cursor: pointer; font-size: 12px !important; color: #409eff !important; font-weight: normal !important; user-select: none; }
+.checkbox-label { cursor: pointer; font-size: 12px !important; color: var(--btn-color) !important; font-weight: normal !important; user-select: none; }
 </style>

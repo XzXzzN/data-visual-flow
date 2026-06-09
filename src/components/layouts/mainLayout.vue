@@ -304,7 +304,7 @@ $panel-bg: #1e293b;
 
 .layout-main {
   flex: 1;
-  padding: 20px;
+  // padding: 20px;
   overflow: hidden;
   /* 🚀 在这里精准加持防跳动属性 */
   background-color: #0b0f19;
