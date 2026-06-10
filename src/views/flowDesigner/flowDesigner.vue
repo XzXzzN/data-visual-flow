@@ -214,11 +214,14 @@ const canUnGroup = computed(() => {
 // ==========================================
 // 3. 核心功能及交互函数
 // ==========================================
+
+// 切换侧边栏折叠状态，并在 DOM 更新后重新调整画布大小
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
   nextTick(() => { resizeCanvas(); });
 };
 
+// 根据侧边栏容器实际尺寸调整 canvas 的宽高
 const resizeCanvas = () => {
   if (canvasRef.value && canvasAreaRef.value) {
     const canvas = canvasRef.value;
@@ -230,12 +233,14 @@ const resizeCanvas = () => {
   }
 };
 
+// 修改全局连线类型，并保存历史记录以便撤销
 const changeGlobalLineType = (type: LineType) => {
   saveHistory();
   state.currentLineType = type;
   state.lines.forEach(line => { line.lineType = type; });
 };
 
+// 删除当前选中的连线，并关闭编辑面板
 const deleteSelectedLine = () => {
   if (!state.selectedLineId) return;
   saveHistory();
@@ -246,6 +251,7 @@ const deleteSelectedLine = () => {
   state.selectedLineId = null;
 };
 
+// 删除在编辑面板中当前正在编辑的连线
 const deleteCurrentLine = () => {
   if (editPanel.targetCategory !== 'line' || !editPanel.targetId) return;
   saveHistory();
@@ -254,6 +260,7 @@ const deleteCurrentLine = () => {
   editPanel.visible = false;
 };
 
+// 处理全局按键事件，用于 Delete 删除当前选中的线
 const onGlobalKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Delete' || e.key === 'Del' || e.key === 'Backspace') {
     if (['INPUT', 'SELECT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
@@ -269,6 +276,8 @@ const onGlobalKeyDown = (e: KeyboardEvent) => {
 // ==========================================
 // 4. 几何核心计算与控制点捕捉
 // ==========================================
+
+// 计算节点中心点坐标，用于连线方向判断和连接点计算
 const getNodeCenter = (node: FlowNode): { x: number; y: number } => {
   return { x: node.x + node.width / 2, y: node.y + node.height / 2 };
 };
@@ -338,6 +347,7 @@ const updateLinesForNodes = (nodeIds: Set<string>) => {
   });
 };
 
+// 计算节点四个锚点的位置，用于绘制连线起点和终点
 const getAnchorPositions = (node: FlowNode): Record<AnchorDirection, { x: number; y: number }> => {
   return {
     top: { x: node.x + node.width / 2, y: node.y },
@@ -347,6 +357,7 @@ const getAnchorPositions = (node: FlowNode): Record<AnchorDirection, { x: number
   };
 };
 
+// 计算节点四个缩放角的坐标，用于显示 resize 控制点
 const getResizeCorners = (node: FlowNode): Record<ResizeCorner, { x: number; y: number }> => {
   return {
     tl: { x: node.x, y: node.y },
@@ -356,6 +367,7 @@ const getResizeCorners = (node: FlowNode): Record<ResizeCorner, { x: number; y: 
   };
 };
 
+// 判断一个点是否落在节点范围内，用于节点点击与选中判定
 const isPointInNode = (x: number, y: number, node: FlowNode): boolean => {
   if (node.type === 'circle') {
     const cx = node.x + node.width / 2; const cy = node.y + node.height / 2;
@@ -369,6 +381,7 @@ const isPointInNode = (x: number, y: number, node: FlowNode): boolean => {
   return x >= node.x && x <= node.x + node.width && y >= node.y && y <= node.y + node.height;
 };
 
+// 查找鼠标是否悬停在任意节点的锚点上，用于开始连接操作
 const findHoveredAnchor = (x: number, y: number): { nodeId: string; direction: AnchorDirection } | null => {
   const threshold = 14;
   for (const node of state.nodes) {
@@ -380,6 +393,7 @@ const findHoveredAnchor = (x: number, y: number): { nodeId: string; direction: A
   return null;
 };
 
+// 查找鼠标是否悬停在节点的缩放角上，用于进入缩放模式
 const findHoveredResizeCorner = (x: number, y: number): { nodeId: string; corner: ResizeCorner } | null => {
   const threshold = 12;
   for (const node of state.nodes) {
@@ -395,6 +409,7 @@ const findHoveredResizeCorner = (x: number, y: number): { nodeId: string; corner
   return null;
 };
 
+// 计算贝塞尔曲线控制点位置，用于绘制平滑连线
 const calculateBezierControlPoints = (startX: number, startY: number, dir: AnchorDirection, endX: number, endY: number, targetDir?: AnchorDirection) => {
   const effTargetDir = targetDir || (dir === 'right' ? 'left' : dir === 'left' ? 'right' : dir === 'top' ? 'bottom' : 'top');
   const cp1x = dir === 'right' ? startX + 40 : dir === 'left' ? startX - 40 : startX;
@@ -404,6 +419,7 @@ const calculateBezierControlPoints = (startX: number, startY: number, dir: Ancho
   return { cp1x, cp1y, cp2x, cp2y };
 };
 
+// 计算折线连线的中间转折点，用于 polyline 类型绘制
 const calculatePolylinePoints = (startX: number, startY: number, fromDir: AnchorDirection, endX: number, endY: number, toDir: AnchorDirection) => {
   const points = [{ x: startX, y: startY }];
   const offset = 25;
@@ -429,6 +445,7 @@ const calculatePolylinePoints = (startX: number, startY: number, fromDir: Anchor
   return points;
 };
 
+// 判断某个点是否靠近一条连线，用于点击连线选中
 const isPointNearLine = (x: number, y: number, line: FlowLine): boolean => {
   const fromNode = state.nodes.find(n => n.id === line.fromNodeId);
   const toNode = state.nodes.find(n => n.id === line.toNodeId);
@@ -440,19 +457,24 @@ const isPointNearLine = (x: number, y: number, line: FlowLine): boolean => {
 
   if (line.lineType === 'polyline') {
     const pts = calculatePolylinePoints(start.x, start.y, line.fromDirection, end.x, end.y, line.toDirection);
-    for (let i = 0; i < pts.length - 1; i++) {
-      if (getDistanceToLine(x, y, pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y) < threshold) return true;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const current = pts[i]!;
+      const next = pts[i + 1]!;
+      if (getDistanceToLine(x, y, current.x, current.y, next.x, next.y) < threshold) return true;
     }
   } else {
     const { cp1x, cp1y, cp2x, cp2y } = calculateBezierControlPoints(start.x, start.y, line.fromDirection, end.x, end.y, line.toDirection);
     const pts = [start, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, end];
-    for (let i = 0; i < pts.length - 1; i++) {
-      if (getDistanceToLine(x, y, pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y) < threshold) return true;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const current = pts[i]!;
+      const next = pts[i + 1]!;
+      if (getDistanceToLine(x, y, current.x, current.y, next.x, next.y) < threshold) return true;
     }
   }
   return false;
 };
 
+// 计算点到线段的最短距离，用于连线命中判定
 const getDistanceToLine = (x: number, y: number, x1: number, y1: number, x2: number, y2: number) => {
   const A = x - x1; const B = y - y1; const C = x2 - x1; const D = y2 - y1;
   const dot = A * C + B * D; const lenSq = C * C + D * D;
@@ -465,6 +487,7 @@ const getDistanceToLine = (x: number, y: number, x1: number, y1: number, x2: num
 // ==========================================
 // 5. 渲染引擎
 // ==========================================
+// 绘制箭头指向，用于连线端点的可视化表示
 const drawArrow = (ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number, color = '#8c939d') => {
   const arrowLength = 10; const angle = Math.atan2(toY - fromY, toX - fromX);
   ctx.save(); ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = 2;
@@ -473,6 +496,7 @@ const drawArrow = (ctx: CanvasRenderingContext2D, fromX: number, fromY: number, 
   ctx.restore();
 };
 
+// 主渲染函数：每帧重绘画布，包括背景、连线、节点、框选等层次
 const draw = () => {
   if (!ctx || !canvasRef.value) return;
   resizeCanvas();
@@ -502,11 +526,19 @@ const draw = () => {
 
     if (line.lineType === 'polyline') {
       const pts = calculatePolylinePoints(start.x, start.y, line.fromDirection, end.x, end.y, line.toDirection);
-      ctx!.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) ctx!.lineTo(pts[i].x, pts[i].y);
-      ctx!.stroke(); ctx!.restore();
-      const lastPt = pts[pts.length - 2];
-      drawArrow(ctx!, lastPt.x, lastPt.y, end.x, end.y, isLineSelected ? '#409eff' : '#8c939d');
+      if (pts.length >= 2) {
+        const firstPt = pts[0]!;
+        ctx!.moveTo(firstPt.x, firstPt.y);
+        for (let i = 1; i < pts.length; i++) {
+          const pt = pts[i]!;
+          ctx!.lineTo(pt.x, pt.y);
+        }
+        ctx!.stroke(); ctx!.restore();
+        const lastPt = pts[pts.length - 2]!;
+        drawArrow(ctx!, lastPt.x, lastPt.y, end.x, end.y, isLineSelected ? '#409eff' : '#8c939d');
+      } else {
+        ctx!.stroke(); ctx!.restore();
+      }
     } else {
       const { cp1x, cp1y, cp2x, cp2y } = calculateBezierControlPoints(start.x, start.y, line.fromDirection, end.x, end.y, line.toDirection);
       ctx!.moveTo(start.x, start.y); ctx!.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, end.x, end.y); ctx!.stroke(); ctx!.restore();
@@ -550,11 +582,19 @@ const draw = () => {
 
       if (state.currentLineType === 'polyline') {
         const pts = calculatePolylinePoints(start.x, start.y, previewFromDir, mouseCurrentPos.x, mouseCurrentPos.y, previewToDir);
-        ctx!.moveTo(pts[0].x, pts[0].y);
-        for (let i = 1; i < pts.length; i++) ctx!.lineTo(pts[i].x, pts[i].y);
-        ctx!.stroke(); ctx!.restore();
-        const lastPt = pts[pts.length - 2];
-        drawArrow(ctx!, lastPt.x, lastPt.y, mouseCurrentPos.x, mouseCurrentPos.y, '#409eff');
+        if (pts.length >= 2) {
+          const firstPt = pts[0]!;
+          ctx!.moveTo(firstPt.x, firstPt.y);
+          for (let i = 1; i < pts.length; i++) {
+            const pt = pts[i]!;
+            ctx!.lineTo(pt.x, pt.y);
+          }
+          ctx!.stroke(); ctx!.restore();
+          const lastPt = pts[pts.length - 2]!;
+          drawArrow(ctx!, lastPt.x, lastPt.y, mouseCurrentPos.x, mouseCurrentPos.y, '#409eff');
+        } else {
+          ctx!.stroke(); ctx!.restore();
+        }
       } else {
         const { cp1x, cp1y, cp2x, cp2y } = calculateBezierControlPoints(start.x, start.y, previewFromDir, mouseCurrentPos.x, mouseCurrentPos.y, previewToDir);
         ctx!.moveTo(start.x, start.y); ctx!.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, mouseCurrentPos.x, mouseCurrentPos.y); ctx!.stroke(); ctx!.restore();
@@ -580,16 +620,20 @@ const draw = () => {
     } else if (node.type === 'diamond') {
       ctx!.beginPath(); ctx!.moveTo(node.x + node.width / 2, node.y); ctx!.lineTo(node.x + node.width, node.y + node.height / 2); ctx!.lineTo(node.x + node.width / 2, node.y + node.height); ctx!.lineTo(node.x, node.y + node.height / 2); ctx!.closePath(); ctx!.fill(); ctx!.stroke();
     } else if (node.type === 'image') {
-      if (node.resUrl && imageCache[node.resUrl]) {
-        try { ctx!.drawImage(imageCache[node.resUrl], node.x, node.y, node.width, node.height); } catch (e) { ctx!.fillStyle = '#fee0e0'; ctx!.fillRect(node.x, node.y, node.width, node.height); }
+      const imageUrl = node.resUrl;
+      const image = imageUrl ? imageCache[imageUrl] : undefined;
+      if (image) {
+        try { ctx!.drawImage(image, node.x, node.y, node.width, node.height); } catch { ctx!.fillStyle = '#fee0e0'; ctx!.fillRect(node.x, node.y, node.width, node.height); }
       } else {
         ctx!.fillStyle = '#f4f4f5'; ctx!.fillRect(node.x, node.y, node.width, node.height);
         ctx!.fillStyle = '#909399'; ctx!.font = '12px sans-serif'; ctx!.textAlign = 'center'; ctx!.fillText('🖼️ 待配置图片', node.x + node.width / 2, node.y + node.height / 2 - 10);
       }
       ctx!.strokeRect(node.x, node.y, node.width, node.height);
     } else if (node.type === 'video') {
-      if (node.resUrl && videoCache[node.resUrl]) {
-        try { ctx!.drawImage(videoCache[node.resUrl], node.x, node.y, node.width, node.height); } catch (e) { ctx!.fillStyle = '#fdf6ec'; ctx!.fillRect(node.x, node.y, node.width, node.height); }
+      const videoUrl = node.resUrl;
+      const video = videoUrl ? videoCache[videoUrl] : undefined;
+      if (video) {
+        try { ctx!.drawImage(video, node.x, node.y, node.width, node.height); } catch { ctx!.fillStyle = '#fdf6ec'; ctx!.fillRect(node.x, node.y, node.width, node.height); }
       } else {
         ctx!.fillStyle = '#f4f4f5'; ctx!.fillRect(node.x, node.y, node.width, node.height);
         ctx!.fillStyle = '#e6a23c'; ctx!.font = '12px sans-serif'; ctx!.textAlign = 'center'; ctx!.fillText('📹 待配置视频', node.x + node.width / 2, node.y + node.height / 2 - 10);
@@ -653,8 +697,10 @@ const draw = () => {
 // ==========================================
 // 6. 交互驱动与事件层
 // ==========================================
+// 拖拽开始：将节点类型放入 drag data，用于放置新节点
 const onDragStart = (e: DragEvent, type: NodeType) => { e.dataTransfer?.setData('nodeType', type); };
 
+// 处理节点拖放到画布上的逻辑，创建新节点并加入状态
 const onDrop = (e: DragEvent) => {
   if (!canvasRef.value) return;
   saveHistory();
@@ -667,6 +713,7 @@ const onDrop = (e: DragEvent) => {
   });
 };
 
+// 处理鼠标按下事件：可能进入拖拽、缩放、连线、选中或框选模式
 const onMouseDown = (e: MouseEvent) => {
   if (e.button !== 0 || !canvasRef.value) return;
 
@@ -750,6 +797,7 @@ const onMouseDown = (e: MouseEvent) => {
   }
 };
 
+// 处理鼠标移动事件：更新 hover 状态，并处理拖拽/缩放操作
 const onMouseMove = (e: MouseEvent) => {
   if (!canvasRef.value) return;
   const rect = canvasRef.value.getBoundingClientRect();
@@ -821,6 +869,7 @@ const onMouseMove = (e: MouseEvent) => {
   }
 };
 
+// 处理鼠标松开事件：结束交互并执行连接、框选或保存历史
 const onMouseUp = (e: MouseEvent) => {
   if (!canvasRef.value) return;
   const rect = canvasRef.value.getBoundingClientRect();
@@ -881,6 +930,7 @@ const onMouseUp = (e: MouseEvent) => {
   interactMode = 'none'; activeLineSource = null; resizeTargetNode = null; resizeActiveCorner = null;
 };
 
+// 处理双击事件：快速打开编辑面板，编辑节点或连线属性
 const onDoubleClick = (e: MouseEvent) => {
   if (!canvasRef.value) return;
   const rect = canvasRef.value.getBoundingClientRect();
@@ -902,6 +952,7 @@ const onDoubleClick = (e: MouseEvent) => {
   }
 };
 
+// 处理编辑面板输入变化，同步名称与资源 URL 到选中对象
 const onInputChange = () => {
   if (editPanel.targetCategory === 'node') {
     const node = state.nodes.find(n => n.id === editPanel.targetId);
@@ -915,6 +966,7 @@ const onInputChange = () => {
   }
 };
 
+// 处理开关变化事件，用于切换节点是否显示原始尺寸
 const onSwitchChange = () => {
   if (editPanel.targetCategory !== 'node') return;
   saveHistory();
@@ -934,6 +986,7 @@ const onSwitchChange = () => {
 // ==========================================
 // 🎯 优化：智能组合算法设计 (解决问题 2)
 // ==========================================
+// 智能组合：将选中节点及其原先关联组统一归入一个新组合
 const makeGroup = () => {
   if (state.selectedNodeIds.length < 2) return;
   saveHistory();
@@ -967,6 +1020,7 @@ const makeGroup = () => {
 // ==========================================
 // 🎯 优化：智能定向解绑 (解决问题 1, 3, 5)
 // ==========================================
+// 解绑组合：只拆除当前选中节点所属的组合关系
 const unGroup = () => {
   if (state.selectedNodeIds.length === 0) return;
   saveHistory();
@@ -989,14 +1043,16 @@ const unGroup = () => {
   });
 };
 
+// 预加载图片或视频资源，并缓存原始宽高比以便保持原始比例
 const preloadResource = (url: string, type: NodeType) => {
   if (!url || url.trim() === '') return;
   if (type === 'image') {
     if (imageCache[url]) return;
     const img = new Image(); img.src = url; img.crossOrigin = 'anonymous';
     img.onload = () => {
-      imageCache[url] = img; originalRatioCache[url] = img.naturalWidth / img.naturalHeight;
-      state.nodes.forEach(n => { if (n.resUrl === url && n.showOriginalSize) { n.height = n.width / originalRatioCache[url]; } });
+      const ratio = img.naturalWidth / img.naturalHeight;
+      imageCache[url] = img; originalRatioCache[url] = ratio;
+      state.nodes.forEach(n => { if (n.resUrl === url && n.showOriginalSize) { n.height = n.width / ratio; } });
       // 图片加载后，如果节点显示原始尺寸发生了变化，更新连线方向
       state.nodes.forEach(n => { if (n.resUrl === url) updateLinesForNodes(new Set([n.id])); });
     };
@@ -1004,14 +1060,16 @@ const preloadResource = (url: string, type: NodeType) => {
     if (videoCache[url]) return;
     const video = document.createElement('video'); video.src = url; video.muted = true; video.loop = true; video.crossOrigin = 'anonymous'; video.playsInline = true;
     video.oncanplaythrough = () => {
-      videoCache[url] = video; originalRatioCache[url] = video.videoWidth / video.videoHeight;
-      state.nodes.forEach(n => { if (n.resUrl === url && n.showOriginalSize) { n.height = n.width / originalRatioCache[url]; } });
+      const ratio = video.videoWidth / video.videoHeight;
+      videoCache[url] = video; originalRatioCache[url] = ratio;
+      state.nodes.forEach(n => { if (n.resUrl === url && n.showOriginalSize) { n.height = n.width / ratio; } });
       state.nodes.forEach(n => { if (n.resUrl === url) updateLinesForNodes(new Set([n.id])); });
       video.play().catch(err => console.warn(err));
     };
   }
 };
 
+// 将当前状态序列化保存到撤销栈，用于撤销/重做功能
 const saveHistory = () => {
   state.undoStack.push(JSON.stringify({
     nodes: state.nodes,
@@ -1022,6 +1080,7 @@ const saveHistory = () => {
   state.redoStack = [];
 };
 
+// 撤销操作：从 undo 栈恢复上一次状态，并将当前状态推入 redo 栈
 const undo = () => {
   if (state.undoStack.length === 0) return;
   state.redoStack.push(JSON.stringify({
@@ -1038,6 +1097,7 @@ const undo = () => {
   state.nodes.forEach(n => { if (n.resUrl) preloadResource(n.resUrl, n.type); });
 };
 
+// 重做操作：从 redo 栈恢复状态，同时将当前状态保存回 undo 栈
 const redo = () => {
   if (state.redoStack.length === 0) return;
   state.undoStack.push(JSON.stringify({
@@ -1054,6 +1114,7 @@ const redo = () => {
   state.nodes.forEach(n => { if (n.resUrl) preloadResource(n.resUrl, n.type); });
 };
 
+// 组件挂载后初始化画布上下文，监听窗口尺寸变化并启动渲染循环
 onMounted(() => {
   if (canvasRef.value && canvasAreaRef.value) {
     ctx = canvasRef.value.getContext('2d'); resizeCanvas();
@@ -1062,6 +1123,7 @@ onMounted(() => {
   }
 });
 
+// 组件销毁时清理动画帧与事件监听，释放视频资源
 onUnmounted(() => {
   cancelAnimationFrame(animationFrameId); window.removeEventListener('resize', resizeCanvas);
   Object.values(videoCache).forEach(video => { video.pause(); video.src = ''; video.load(); });

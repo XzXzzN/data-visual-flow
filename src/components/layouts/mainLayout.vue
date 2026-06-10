@@ -142,10 +142,13 @@ onUnmounted(() => {
 const handleTopMenuClick = (menu: MenuItem) => {
   menuStore.setActiveTopMenu(menu.id)
   if (menu.children && menu.children.length > 0) {
-    router.push(menu.children[0].path)
-  } else {
-    router.push(menu.path)
+    const firstChild = menu.children[0]
+    if (firstChild) {
+      router.push(firstChild.path)
+      return
+    }
   }
+  router.push(menu.path)
 }
 </script>
 
